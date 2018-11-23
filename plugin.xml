@@ -34,7 +34,7 @@
         <source-file src="src/android/GaodeLocation.java" target-dir="src/daihere/cordova/plugin" />
 
         <!-- Gaode skd -->
-        <source-file src="src/android/libs/Gaode_Location_SDK_V3.5.0.jar" target-dir="libs"/>
+        <lib-file src="src/android/libs/Gaode_Location_SDK_V3.5.0.jar"/>
     </platform>
 
     <!-- iOS -->
