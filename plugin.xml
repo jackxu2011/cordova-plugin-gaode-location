@@ -1,8 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-gaode-location" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-gaode-location" version="1.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-plugin-gaode-location</name>
+
     <preference name="ANDROIDKEY" />
     <preference name="IOSKEY" />
+    <preference name="LOCATION_USAGE_DESCRIPTION"/>
     <js-module name="cordova-plugin-gaode-location" src="www/cordova-plugin-gaode-location.js">
         <clobbers target="GaodeLocation" />
     </js-module>
@@ -60,7 +62,6 @@
             </array>
         </config-file>
 
-        <preference name="LOCATION_USAGE_DESCRIPTION" default="请选择'始终允许'以保证应用的正常运行" />
         <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
             <string>$LOCATION_USAGE_DESCRIPTION</string>
         </config-file>

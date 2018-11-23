@@ -5,7 +5,7 @@
 # Install
 
 ```bash
-ionic plugin add https://github.com/daihere1993/cordova-plugin-gaode-location --variable ANDROIDKEY=YOU_ANDROIDKEY --variable IOSKEY=YOU_IOSKEY
+ionic plugin add https://github.com/daihere1993/cordova-plugin-gaode-location --variable ANDROIDKEY=YOU_ANDROIDKEY --variable IOSKEY=YOU_IOSKEY --variable LOCATION_USAGE_DESCRIPTION="使用定位功能以查询人员附近公交车辆"
 ```
 
 # Parameters
