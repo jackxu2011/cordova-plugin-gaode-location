@@ -144,6 +144,10 @@ public class GaodeLocation extends CordovaPlugin {
                         locationInfo.put("district", location.getDistrict());
                         // 地址
                         locationInfo.put("address", location.getAddress());
+                        //城市代码
+                        locationInfo.put("cityCode", location.getCityCode());
+                        //行政区划代码
+                        locationInfo.put("adCode", location.getAdCode());
 
                         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, locationInfo);
                         pluginResult.setKeepCallback(true);

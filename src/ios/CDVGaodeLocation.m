@@ -178,6 +178,8 @@
             [weakSelf.locationInfo setValue:regeocode.province forKey:@"province"];
             [weakSelf.locationInfo setValue:regeocode.city forKey:@"city"];
             [weakSelf.locationInfo setValue:regeocode.district forKey:@"district"];
+            [weakSelf.locationInfo setValue:regeocode.citycode forKey:@"cityCode"];
+            [weakSelf.locationInfo setValue:regeocode.adcode forKey:@"adCode"];
             
             NSLog(@"地址信息：%@", [NSString stringWithFormat:@"%@ \n %@-%@-%.2fm", regeocode.formattedAddress,regeocode.citycode, regeocode.adcode, location.horizontalAccuracy]);
         } else {
