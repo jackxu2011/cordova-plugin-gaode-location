@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-gaode-location" version="1.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-gaode-location" version="1.1.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-plugin-gaode-location</name>
 
     <preference name="ANDROIDKEY" />
@@ -8,6 +8,12 @@
     <js-module name="cordova-plugin-gaode-location" src="www/cordova-plugin-gaode-location.js">
         <clobbers target="GaodeLocation" />
     </js-module>
+
+    <engines>
+      <engine name="cordova" version=">=7.1.0" />
+      <engine name="cordova-android" version=">=7.0.0" />
+      <engine name="cordova-ios" version=">=4.3.0" />
+    </engines>
 
     <!-- android -->
     <platform name="android">
@@ -38,8 +44,6 @@
         <!-- Gaode skd -->
         <framework src="src/android/Gaode.gradle" custom="true" type="gradleReference" />
     </platform>
-
-    <dependency id="cordova-plugin-cocoapod-support"/>
 
     <!-- iOS -->
     <platform name="ios">
@@ -85,11 +89,7 @@
         <source-file src="src/ios/CDVGaodeLocation.m" />
 
         <!-- Gaode sdk -->
-        <!-- Wechat Official -->
-        <pods-config ios-min-version="9.0" use-frameworks="true">
-            <source url="https://github.com/CocoaPods/Specs.git" />
-        </pods-config>
-        <pod name="AMapLocation-NO-IDFA" />
+        <framework src="AMapLocation-NO-IDFA" type="podspec" spec=""/>
 
     </platform>
 </plugin>

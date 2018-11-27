@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-gaode-location",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "基于cordova封装的高德地图定位插件",
   "cordova": {
     "id": "cordova-plugin-gaode-location",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/daihere1993/corodva-plugin-gaode-location"
+    "url": "git+https://github.com/jackxu2011/corodva-plugin-gaode-location.git"
   },
   "keywords": [
     "cordova",
@@ -20,10 +20,24 @@
     "amap",
     "location"
   ],
-  "author": "daihere1993 <daihere1993@gmail.com>",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/daihere1993/cordova-plugin-gaode-location/issues"
+  "engines": {
+    "cordovaDependencies": {
+      "<=1.0.1": {
+        "cordova": ">=6.1.0",
+        "cordova-android": "<7.0.0",
+        "cordova-ios": ">=4.3.0"
+      },
+      "1.1.0": {
+        "cordova": ">=7.1.0",
+        "cordova-android": ">=7.0.0",
+        "cordova-ios": ">=4.3.0"
+      }
+    }
   },
-  "homepage": "https://github.com/daihere1993/cordova-plugin-gaode-location#readme"
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jackxu2011/cordova-plugin-gaode-location/issues"
+  },
+  "homepage": "https://github.com/jackxu2011/cordova-plugin-gaode-location#readme"
 }
