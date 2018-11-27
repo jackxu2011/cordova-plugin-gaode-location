@@ -36,8 +36,10 @@
         <source-file src="src/android/GaodeLocation.java" target-dir="src/daihere/cordova/plugin" />
 
         <!-- Gaode skd -->
-        <lib-file src="src/android/libs/Gaode_Location_SDK_V3.5.0.jar"/>
+        <framework src="src/android/Gaode.gradle" custom="true" type="gradleReference" />
     </platform>
+
+    <dependency id="cordova-plugin-cocoapod-support"/>
 
     <!-- iOS -->
     <platform name="ios">
@@ -83,18 +85,11 @@
         <source-file src="src/ios/CDVGaodeLocation.m" />
 
         <!-- Gaode sdk -->
-        <framework src="src/ios/libs/AMapLocationKit.framework" custom="true" />
-        <framework src="src/ios/libs/AMapFoundationKit.framework" custom="true" />
+        <!-- Wechat Official -->
+        <pods-config ios-min-version="9.0" use-frameworks="true">
+            <source url="https://github.com/CocoaPods/Specs.git" />
+        </pods-config>
+        <pod name="AMapLocation" />
 
-        <!-- System framework -->
-        <framework src="SystemConfiguration.framework" />
-        <framework src="CoreTelephony.framework" />
-        <framework src="libz.tbd" />
-        <framework src="libstdc++.6.0.9.tbd" />
-        <framework src="libc++.tbd" />
-        <framework src="JavaScriptcore.framework" />
-        <framework src="SystemConfiguration.framework"/>
-        <framework src="CoreLocation.framework"/>
-        <framework src="Security.framework"/>
     </platform>
 </plugin>

@@ -1,0 +1,8 @@
+repositories {
+   jcenter()
+}
+
+dependencies {
+  implementation fileTree(include: ['*.jar'], dir: 'libs')
+  implementation 'com.amap.api:location:+'
+}
