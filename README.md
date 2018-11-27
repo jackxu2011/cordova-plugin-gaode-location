@@ -5,7 +5,7 @@
 # Install
 
 ```bash
-cordova plugin add https://github.com/jackxu2011/cordova-plugin-gaode-location --variable ANDROIDKEY=YOU_ANDROIDKEY --variable IOSKEY=YOU_IOSKEY --variable LOCATION_USAGE_DESCRIPTION="使用定位功能以查询人员附近公交车辆"
+cordova plugin add cordova-plugin-gaode-location-v2 --variable ANDROIDKEY=YOU_ANDROIDKEY --variable IOSKEY=YOU_IOSKEY --variable LOCATION_USAGE_DESCRIPTION="使用定位功能以查询人员附近公交车辆"
 ```
 
 # Parameters
@@ -46,6 +46,8 @@ Android端和iOS端各自有各自的参数
 - city：市
 - district：区
 - address：具体地址
+- cityCode: 城市代码
+- adCode: 行政区划代码
 
 # Useage
 
