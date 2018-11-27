@@ -89,7 +89,7 @@
         <pods-config ios-min-version="9.0" use-frameworks="true">
             <source url="https://github.com/CocoaPods/Specs.git" />
         </pods-config>
-        <pod name="AMapLocation" />
+        <pod name="AMapLocation-NO-IDFA" />
 
     </platform>
 </plugin>
