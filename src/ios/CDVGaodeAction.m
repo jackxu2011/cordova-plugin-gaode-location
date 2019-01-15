@@ -1,10 +1,8 @@
 //
-//  CDVGaodeAction.m
-//  行在岱山
+//  CDVGaodeAction.h
 //
 //  Created by 许灵 on 2019/1/15.
 //
-
 #import "CDVGaodeAction.h"
 
 @implementation CDVGaodeAction
