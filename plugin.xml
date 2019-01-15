@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-gaode-location-v2" version="1.1.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-gaode-location-v2" version="1.2.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-plugin-gaode-location</name>
 
     <preference name="ANDROIDKEY" />
@@ -13,13 +13,15 @@
       <engine name="cordova" version=">=7.1.0" />
       <engine name="cordova-android" version=">=7.0.0" />
       <engine name="cordova-ios" version=">=4.3.0" />
+      <engine name="apple-xcode" version=">=9.0.0" />
+      <engine name="apple-ios" version=">=9.0.0" />
     </engines>
 
     <!-- android -->
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="GaodeLocation">
-                <param name="android-package" value="daihere.cordova.plugin.GaodeLocation"/>
+                <param name="android-package" value="com.linkcld.cordova.amap.GaodeLocation"/>
             </feature>
             <preference name="ANDROIDKEY" value="$ANDROIDKEY" />
         </config-file>
@@ -39,7 +41,9 @@
         </config-file>
 
         <!-- Plugin souce code -->
-        <source-file src="src/android/GaodeLocation.java" target-dir="src/daihere/cordova/plugin" />
+        <source-file src="src/android/GaodeLocation.java" target-dir="src/com/linkcld/cordova/amap" />
+        <source-file src="src/android/ActionHolder.java" target-dir="src/com/linkcld/cordova/amap" />
+        <source-file src="src/android/LocationListener.java" target-dir="src/com/linkcld/cordova/amap" />
 
         <!-- Gaode skd -->
         <framework src="src/android/Gaode.gradle" custom="true" type="gradleReference" />
@@ -83,10 +87,17 @@
               <true/>
           </dict>
         </config-file>
+        <config-file target="*-Info.plist" parent="UIBackgroundModes">
+            <array>
+                <string>location</string>
+            </array>
+        </config-file>
 
         <!-- Plugin source code -->
         <header-file src="src/ios/CDVGaodeLocation.h" />
         <source-file src="src/ios/CDVGaodeLocation.m" />
+        <header-file src="src/ios/CDVGaodeAction.h" />
+        <source-file src="src/ios/CDVGaodeAction.m" />
 
         <!-- Gaode sdk -->
         <framework src="AMapLocation-NO-IDFA" type="podspec" spec=""/>

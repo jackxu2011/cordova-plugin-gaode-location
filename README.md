@@ -1,6 +1,8 @@
 # cordova-plugin-gaode-location
 
-基于cordova封装的高德地图定位插件(暂时只支持单次定位)
+基于cordova封装的高德地图定位插件
+* 单次定位 getLocation方法 去除retGeo参数
+* 持续定位 watchLocation方法
 
 # Install
 
@@ -20,22 +22,23 @@ Android端和iOS端各自有各自的参数
   - 1：Hight_Accuracy
   - 2：Device_Sensors
   - 3：Battery_Saving
+- httpTimeout：定位超时时间, 单位ms，默认：30000
 
 ### iOS
 
-- accuracy(number)：定位精度（精度逐级递减，具体对应的模式参考官网），默认：4
+- accuracy(number)：定位精度（精度逐级递减，具体对应的模式参考官网），默认：3
   - 1: kCLLocationAccuracyBestForNavigation
   - 2: kCLLocationAccuracyBest
   - 3: kCLLocationAccuracyNearestTenMeters
   - 4: kCLLocationAccuracyHundredMeters
   - 5: kCLLocationAccuracyKilometer
   - 6: kCLLocationAccuracyThreeKilometers
-- locationTimeout：定位超时时间，默认：3
-- reGeoCodeTimeout：逆地址超时时间，默认：5
+- locationTimeout：定位超时时间，单位s 默认：10
+- reGeoCodeTimeout：逆地址超时时间，单位s 默认：5
 
   ## getLocation方法
 
-  - retGeo: 是否返回逆地址，默认：false
+  - ~~~retGeo: 是否返回逆地址，默认：true~~~
 
 # Success return data
 
@@ -55,7 +58,6 @@ Android端和iOS端各自有各自的参数
 var onLocationReady = $q.defer();
 // 定制参数
 var para = {
-  appName: 'your app name',
   android: {
     // set some parameters
   },
@@ -63,7 +65,7 @@ var para = {
     // set some parameters
   }
 }
-// 配置手機定位
+// 配置手机定位（可选）
 GaodeLocation.configLocation(para, function (successMsg) {
   // do something
   onLocationReady.resolve();
@@ -73,7 +75,18 @@ GaodeLocation.configLocation(para, function (successMsg) {
 onLocationReady
   .promise
   .then(function () {
-    GaodeLocation.getLocation({ retGeo: true }, function (locationInfo) {
+    GaodeLocation.getLocation(function (locationInfo) {
+      // do something
+    }, function (err) {
+      console.log(err);
+    });
+    GaodeLocation.watchLocation(function (locationInfo) {
+      // first time will return 'requestCode', {requestCode: 1234}, use this code to stop watchLocation
+      // do something
+    }, function (err) {
+      console.log(err);
+    });
+    GaodeLocation.stopWatch(requestCode, function (successMsg) {
       // do something
     }, function (err) {
       console.log(err);

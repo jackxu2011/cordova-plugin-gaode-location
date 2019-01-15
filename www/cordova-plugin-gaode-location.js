@@ -11,12 +11,12 @@ function isFunction(fn) {
 }
 
 module.exports = {
-    configLocation: function (param, success) {
+    configLocation: function (param, success, error) {
         param = param || { };
         param.android = param.android || { };
         param.ios = param.ios || { };
 
-        exec(success, null, "GaodeLocation", "configLocationManager", [param]);
+        exec(success, error, "GaodeLocation", "configLocationManager", [param]);
     },
     getLocation: function(param, success, error) {
         if (isFunction(param)) {
@@ -26,5 +26,11 @@ module.exports = {
         }
         param = param || { retGeo: false };
         exec(success, error, "GaodeLocation", "getLocation", [param]);
+    },
+    watchLocation: function(success, error) {
+        exec(success, error, "GaodeLocation", "watchLocation", []);
+    },
+    stopWatch: function(param, success, error) {
+        exec(success, error, "GaodeLocation", "stopWatch", [param]);
     }
 };

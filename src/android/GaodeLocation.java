@@ -1,4 +1,4 @@
-package daihere.cordova.plugin;
+package com.linkcld.cordova.amap;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
@@ -15,6 +15,7 @@ import com.amap.api.location.AMapLocationClientOption.AMapLocationMode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 import android.Manifest;
@@ -30,276 +31,247 @@ import android.telecom.Call;
 
 public class GaodeLocation extends CordovaPlugin {
 
-    public  Context context = null;
+    private static final int  ARGS_FORMAT_ERROR_CODE = 101;
+    private static final String  ARGS_FORMAT_ERROR_MSG = "参数错误，请检查参数格式";
+
+    private static final String LOCATION_PERMISSION_ERROR_MSG = "当前应用缺少必要权限";
+
     // AMapLocationClient类对象
     public AMapLocationClient locationClient = null;
     // 定位参数
     public AMapLocationClientOption locationOption = null;
+
+    private LocationListener locationListener = null;
+
     // JS回掉接口对象
     public static CallbackContext cb = null;
-    // 权限申请码
-    private static final int PERMISSION_REQUEST_CODE = 500;
+
+    private Map<Integer, ActionHolder> actions = new HashMap();
+
     // 需要进行检测的权限数组
-    protected String[] needPermissions = {
+    public static String[] needPermissions = {
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION
     };
 
     @Override
     protected void pluginInitialize() {
+        // 初始化Client
+        locationClient = new AMapLocationClient(this.webView.getContext());
+        // 初始化监听器
+        locationListener = new LocationListener();
+        // 初始化定位参数
+        locationOption = initOption();
+        // 设置选项
+        locationClient.setLocationOption(locationOption);
+        // 设置定位监听函数
+        locationClient.setLocationListener(locationListener);
     }
 
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("getLocation")) {
-            getLocation(args, callbackContext);
-            return true;
-        } else if (action.equals("configLocationManager")) {
-            if (this.isNeedCheckPermissions(needPermissions)) {
-                this.checkPermissions(needPermissions);
+
+        ActionHolder actionHolder = new ActionHolder(action, args, callbackContext);
+
+        if(actionHolder.invalid(action)) {
+            return false;
+        } 
+
+        execute(actionHolder);
+        
+        return true;
+    }
+
+    private void execute(ActionHolder actionHolder) {
+
+        if (ActionHolder.GET_LOCATION.equals(actionHolder.getAction())) {
+            if (this.isMissPermissions()) {
+                this.requestNeedPermissions(actionHolder.getRequestCode());
+            } else {
+                getLocation(actionHolder);
             }
-            configLocationClient(args, callbackContext);
-            return true;
+        } 
+
+        if (ActionHolder.WATCH_LOCATION.equals(actionHolder.getAction())) {
+            if (this.isMissPermissions()) {
+                this.requestNeedPermissions(actionHolder.getRequestCode());
+            } else {
+                watchLocation(actionHolder);
+            }
+        } 
+
+        if (ActionHolder.STOP_WATCH.equals(actionHolder.getAction())) {
+            
+            stopWatch(actionHolder);
         }
 
-        return false;
+        if (ActionHolder.CONFIG_LOCATION_OPTION.equals(actionHolder.getAction())) {
+            
+            configLocationClient(actionHolder);
+        }
     }
 
     /**
-     * 判断是否需要检测，防止不停的弹框
-     */
-    private boolean isNeedCheck = true;
-
-    /**
      * 初始化locationClient
-     * @param args
-     * @param callbackContext
      */
-    public void configLocationClient(final  CordovaArgs args, final CallbackContext callbackContext) {
+    private void configLocationClient(ActionHolder actionHolder) {
 
         // 获取初始化定位参数
-        JSONObject params;
-        String appName;
-        JSONObject androidPara;
+        JSONObject androidPara = new JSONObject();
         try {
-            params = args.getJSONObject(0);
-            appName = params.has("appName") ? params.getString("appName") : "当前应用";
-            androidPara = params.has("android") ? params.getJSONObject("android") : new JSONObject();
-        } catch (JSONException e) {
-            callbackContext.error("参数格式错误");
-            return;
-        }
-        // 初始化Client
-        locationClient = new AMapLocationClient(this.webView.getContext());
-        // 初始化定位参数
-        locationOption = getOption(androidPara, callbackContext);
-        // 设置定位监听函数
-        locationClient.setLocationListener(locationListener);
+            JSONObject params = actionHolder.getArgs().getJSONObject(0);
+            androidPara = params.has("android") ? params.getJSONObject("android") : androidPara;
+        } catch (JSONException ignored) {}
 
-        callbackContext.success("初始化成功");
+        setOption(androidPara);
+        actionHolder.getCallbackContext().success("初始化成功");
     }
 
     /**
      * 获取定位
      */
-    public void getLocation(final CordovaArgs args, final CallbackContext callbackContext) {
-        Boolean retGeo;
-        JSONObject params;
-        cb = callbackContext;
+    private void getLocation(ActionHolder actionHolder) {
 
-        try {
-            params = args.getJSONObject(0);
-            retGeo = params.has("retGeo") ? params.getBoolean("retGeo") : false;
-
-            locationOption.setNeedAddress(retGeo);
-            locationClient.setLocationOption(locationOption);
+        if(locationListener.isOnceLocation()) {
+            locationListener.addAction(actionHolder);
             locationClient.startLocation();
-        } catch (JSONException e) {
-            callbackContext.error("参数格式错误");
-            return;
+        } else {
+            if(!locationClient.isStarted()) {
+                locationListener.setOnceLocation(true);
+                locationOption.setOnceLocation(true);
+                locationClient.startLocation();
+            }
+            locationListener.addAction(actionHolder);
         }
     }
 
     /**
-     * 定位监听函数
+     * 订阅定位
      */
-    AMapLocationListener locationListener = new AMapLocationListener() {
-        @Override
-        public void onLocationChanged(AMapLocation location) {
-            JSONObject locationInfo = new JSONObject();
-            if (null != location) {
-                if (location.getErrorCode() == 0) {
-                    try {
-                        // 纬度
-                        locationInfo.put("latitude", location.getLatitude());
-                        // 经度
-                        locationInfo.put("longitude", location.getLongitude());
-                        // 国家
-                        locationInfo.put("country", location.getCountry());
-                        // 省
-                        locationInfo.put("province", location.getProvince());
-                        // 市
-                        locationInfo.put("city", location.getCity());
-                        // 区
-                        locationInfo.put("district", location.getDistrict());
-                        // 地址
-                        locationInfo.put("address", location.getAddress());
-                        //城市代码
-                        locationInfo.put("cityCode", location.getCityCode());
-                        //行政区划代码
-                        locationInfo.put("adCode", location.getAdCode());
+    private void watchLocation(ActionHolder actionHolder) {
 
-                        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, locationInfo);
-                        pluginResult.setKeepCallback(true);
-                        cb.sendPluginResult(pluginResult);
-                    } catch (JSONException e) {
-                        cb.error("参数错误，请检查参数格式");
-                    }
-                } else {
-                    JSONObject sb = new JSONObject();
-                    try {
-                        sb.put("errorCode", location.getErrorCode() + "\n");
-                        sb.put("errorInfo", location.getErrorInfo() + "\n");
-                        sb.put("errorDetail", location.getLocationDetail() + "\n");
-                    } catch (JSONException e) {
-                        cb.error("参数错误，请检查参数格式");
-                    }
-                    cb.error(sb);
-                }
+        if(locationListener.isOnceLocation() ) {
+            locationOption.setOnceLocation(false);
+            locationListener.setOnceLocation(false);
+            if(locationClient.isStarted()) {
+                locationClient.stopLocation();
             }
         }
-    };
+        if(!locationClient.isStarted()) {
+            locationClient.startLocation();
+        }
 
+        actionHolder.sendResult(getStartWatchResult(actionHolder.getRequestCode()));
+
+        locationListener.addAction(actionHolder);
+    }
+
+    /**
+     * 取消定位
+     */
+    private void stopWatch(ActionHolder actionHolder) {
+        int requestCode = actionHolder.getArgs().optInt(0);
+        if(requestCode == 0) {
+            actionHolder.sendResult(getArgsErrorResult());
+            return;
+        }
+
+        locationListener.stopWatch(requestCode);
+        if(locationListener.getActionHolders().isEmpty()) {
+            locationClient.stopLocation();
+        }
+        
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(this.locationClient != null) {
+            locationClient.onDestroy();
+        }
+        this.locationClient = null;
+    }
+
+    private PluginResult getArgsErrorResult() {
+        JSONObject error = new JSONObject();
+        try {
+            error.put("errorCode", ARGS_FORMAT_ERROR_CODE);
+            error.put("errorInfo", ARGS_FORMAT_ERROR_MSG);
+        } catch (JSONException ignored) {}
+
+        PluginResult result = new PluginResult(PluginResult.Status.ERROR, error);
+        return result;
+    }
+
+    private PluginResult getStartWatchResult(int requestCode) {
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("requestCode", requestCode);
+        } catch (JSONException ignored) {}
+
+        PluginResult result = new PluginResult(PluginResult.Status.OK, msg);
+        return result;
+    }
+
+    private void setOption(JSONObject params) {
+
+        if(params != null) {
+            try {
+                AMapLocationMode mode = AMapLocationMode.Hight_Accuracy;
+                // 定位模式，默认为高精度
+                int modeCode = params.has("mode") ? params.getInt("mode") : 1;
+                switch (modeCode) {
+                    case 1: mode = AMapLocationMode.Hight_Accuracy; break;
+                    case 2: mode = AMapLocationMode.Device_Sensors; break;
+                    case 3: mode = AMapLocationMode.Battery_Saving; break;
+                }
+                locationOption.setLocationMode(mode);
+                long httpTimeout = params.has("httpTimeout") ? params.getLong("httpTimeout") : 30000;
+                locationOption.setHttpTimeOut(httpTimeout);
+            } catch (JSONException ignored) {}
+        }
+    }
 
     /**
      * 初始化clientOption
      */
-    private AMapLocationClientOption getOption(JSONObject params, CallbackContext callbackContext) {
+    private AMapLocationClientOption initOption() {
+
         AMapLocationClientOption mOption = new AMapLocationClientOption();
-
-        try {
-            // 定位模式，默认为高精度
-            AMapLocationMode mode = null;
-            int modeCode = params.has("mode") ? params.getInt("mode") : 1;
-            switch (modeCode) {
-                case 1: mode = AMapLocationMode.Hight_Accuracy; break;
-                case 2: mode = AMapLocationMode.Device_Sensors; break;
-                case 3: mode = AMapLocationMode.Battery_Saving; break;
-            }
-            // 超时时间，仅在设备模式下无效，初始为30秒
-            long timeOut = params.has("timeOut") ? params.getLong("timeOut") : 30000;
-            // 是否单次定位，目前暂时只支持单次定位
-            Boolean onceLocation = true;
-            // 是否等待wife刷新
-            Boolean onceLocationLatest = true;
-
-            mOption.setLocationMode(mode);
-            mOption.setHttpTimeOut(timeOut);
-            mOption.setOnceLocation(onceLocation);
-            mOption.setOnceLocationLatest(onceLocationLatest);
-
-        } catch (JSONException e) {
-            cb.error("参数错误，请检查参数格式");
-        }
-
+        
+        mOption.setOnceLocation(true);
+        mOption.setOnceLocationLatest(true);
+        mOption.setMockEnable(false);
         return mOption;
-    }
-
-    /**
-     *  启动应用的设置
-     */
-    private void startAppSettings() {
-        Intent intent = new Intent(
-                Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//        intent.setData(Uri.parse("package:" + getPackageName()));
-//        startActivity(intent);
-    }
-
-    /**
-     * 检查权限
-     */
-    private void checkPermissions(String... permissions) {
-        try {
-            List<String> needRequestPermissionList = findNeedPermissions(permissions);
-            if (null != needRequestPermissionList && needRequestPermissionList.size() > 0) {
-                String[] array = needRequestPermissionList.toArray(new String[needRequestPermissionList.size()]);
-                cordova.requestPermissions(this, PERMISSION_REQUEST_CODE, array);
-            }
-        } catch (Throwable e) {
-
-        }
-    }
-
-    /**
-     * 判断是否需要权限校验
-     */
-    private boolean isNeedCheckPermissions(String... permission) {
-        List<String> needRequestPermissionList = findNeedPermissions(permission);
-        if (null != needRequestPermissionList && needRequestPermissionList.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * 获取需要获取权限的集合
-     */
-    private  List<String> findNeedPermissions(String[] permissions) {
-        List<String> needRequestPermissionList = new ArrayList<String>();
-        try {
-            for (String perm : permissions) {
-                if (!cordova.hasPermission(perm)) {
-                    needRequestPermissionList.add(perm);
-                }
-            }
-        } catch (Throwable e) {
-
-        }
-        return needRequestPermissionList;
     }
 
     /**
      * 权限检测回调
      */
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] paramArrayOfInt) {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (!verifyPermissions(paramArrayOfInt)) {
-                showMissingPermissionDialog();
-                isNeedCheck = false;
-            }
+        ActionHolder actionHolder =  actions.get(requestCode);
+        if(actionHolder == null) {
+            return;
+        }
+        actions.remove(requestCode);
+        if (!verifyPermissions(paramArrayOfInt)) {
+            actionHolder.sendResult(getPermissionErrorResult());
+        } else {
+            execute(actionHolder);
         }
     }
 
-    /**
-     * 显示提示信息
-     */
-    private void showMissingPermissionDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("提示");
-        builder.setMessage("当前应用缺少必要权限。\\n\\n请点击\\\"设置\\\"-\\\"权限\\\"-打开所需权限。");
+    private PluginResult getPermissionErrorResult() {
+        JSONObject error = new JSONObject();
+        try {
+            error.put("errorCode", AMapLocation.ERROR_CODE_FAILURE_LOCATION_PERMISSION);
+            error.put("errorInfo", LOCATION_PERMISSION_ERROR_MSG);
+        } catch (JSONException ignored) {}
 
-        // 拒绝, 退出应用
-        builder.setNegativeButton("取消",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-//                        finish();
-                    }
-                });
-
-        builder.setPositiveButton("设置",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        startAppSettings();
-                    }
-                });
-
-        builder.setCancelable(false);
-
-        builder.show();
+        PluginResult result = new PluginResult(PluginResult.Status.ERROR, error);
+        return result;
     }
+
 
     /**
      * 检测是否所有的权限都已经授权
@@ -312,4 +284,50 @@ public class GaodeLocation extends CordovaPlugin {
         }
         return true;
     }
+
+    /**
+     * 检查权限
+     */
+    private void requestNeedPermissions(int requestCode) {
+        try {
+            List<String> missPermissionList = findMissPermissions(GaodeLocation.needPermissions);
+            if (null != missPermissionList && missPermissionList.size() > 0) {
+                String[] array = new String[missPermissionList.size()];
+                array = missPermissionList.toArray(array);
+                cordova.requestPermissions(this, requestCode, array);
+            }
+        } catch (Throwable e) {
+
+        }
+    }
+
+    /**
+     * 判断是否需要权限校验
+     */
+    private boolean isMissPermissions() {
+        List<String> missPermissionList = findMissPermissions(GaodeLocation.needPermissions);
+        if (null != missPermissionList && missPermissionList.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 获取需要获取权限的集合
+     */
+    private  List<String> findMissPermissions(String[] permissions) {
+        List<String> missPermissionList = new ArrayList<String>();
+        try {
+            for (String perm : permissions) {
+                if (!cordova.hasPermission(perm)) {
+                    missPermissionList.add(perm);
+                }
+            }
+        } catch (Throwable e) {
+
+        }
+        return missPermissionList;
+    }
+
 }
