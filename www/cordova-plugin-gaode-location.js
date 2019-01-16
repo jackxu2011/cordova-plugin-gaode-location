@@ -24,8 +24,7 @@ module.exports = {
             success = param;
             param = null;
         }
-        param = param || { retGeo: false };
-        exec(success, error, "GaodeLocation", "getLocation", [param]);
+        exec(success, error, "GaodeLocation", "getLocation", [ ]);
     },
     watchLocation: function(success, error) {
         exec(success, error, "GaodeLocation", "watchLocation", []);

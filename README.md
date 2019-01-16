@@ -4,6 +4,9 @@
 * 单次定位 getLocation方法 去除retGeo参数
 * 持续定位 watchLocation方法
 
+<strong>变更</strong>
+* 当无权限时直接返回错误回调，不直接显示错误信息。 errorCode: 12
+
 # Install
 
 ```bash
@@ -38,7 +41,7 @@ Android端和iOS端各自有各自的参数
 
   ## getLocation方法
 
-  - ~~~retGeo: 是否返回逆地址，默认：true~~~
+  - ~~retGeo: 是否返回逆地址，默认：true~~
 
 # Success return data
 
