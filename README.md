@@ -41,7 +41,7 @@ Android端和iOS端各自有各自的参数
 
   ## getLocation方法
 
-  - ~~retGeo: 是否返回逆地址，默认：true~~
+  - ~~retGeo: 是否返回逆地址，默认：true, 这个参数已不再生效~~
 
 # Success return data
 
@@ -74,7 +74,7 @@ GaodeLocation.configLocation(para, function (successMsg) {
   onLocationReady.resolve();
 });
 
-// 在啟動手機定位后即可通過'getLocation'隨時獲取最新的位置信息，注意一定要再手机定位启动成功之后执行，否则会报错
+// 如果需要配置定位信息，需要以方式实现
 onLocationReady
   .promise
   .then(function () {
@@ -95,4 +95,22 @@ onLocationReady
       console.log(err);
     });
   });
+  
+//可直接调用getLocation等方法。
+GaodeLocation.getLocation(function (locationInfo) {
+  // do something
+}, function (err) {
+  console.log(err);
+});
+GaodeLocation.watchLocation(function (locationInfo) {
+  // first time will return 'requestCode', {requestCode: 1234}, use this code to stop watchLocation
+  // do something
+}, function (err) {
+  console.log(err);
+});
+GaodeLocation.stopWatch(requestCode, function (successMsg) {
+  // do something
+}, function (err) {
+  console.log(err);
+});
 ```
